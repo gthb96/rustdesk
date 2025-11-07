@@ -146,16 +146,8 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
                 connectionType.secure.value == ConnectionType.strSecure;
             bool direct =
                 connectionType.direct.value == ConnectionType.strDirect;
-            String msgConn;
-            if (secure && direct) {
-              msgConn = translate("Direct and encrypted connection");
-            } else if (secure && !direct) {
-              msgConn = translate("Relayed and encrypted connection");
-            } else if (!secure && direct) {
-              msgConn = translate("Direct and unencrypted connection");
-            } else {
-              msgConn = translate("Relayed and unencrypted connection");
-            }
+            String msgConn = getConnectionText(
+                secure, direct, connectionType.stream_type.value);
             var msgFingerprint = '${translate('Fingerprint')}:\n';
             var fingerprint = FingerprintState.find(key).value;
             if (fingerprint.isEmpty) {
@@ -269,8 +261,10 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
           style: style,
         ),
         proc: () async {
-          await DesktopMultiWindow.invokeMethod(kMainWindowId,
-              kWindowEventMoveTabToNewWindow, '${windowId()},$key,$sessionId');
+          await DesktopMultiWindow.invokeMethod(
+              kMainWindowId,
+              kWindowEventMoveTabToNewWindow,
+              '${windowId()},$key,$sessionId,RemoteDesktop');
           cancelFunc();
         },
         padding: padding,
@@ -417,8 +411,8 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
           await WindowController.fromWindowId(windowId()).setFullscreen(false);
           stateGlobal.setFullscreen(false, procWnd: false);
         }
-        await setNewConnectWindowFrame(
-            windowId(), id!, prePeerCount, display, screenRect);
+        await setNewConnectWindowFrame(windowId(), id!, prePeerCount,
+            WindowType.RemoteDesktop, display, screenRect);
         Future.delayed(Duration(milliseconds: isWindows ? 100 : 0), () async {
           await windowOnTop(windowId());
         });
